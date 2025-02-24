@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Producto</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Editar Producto</h2>
+
+        <!-- Formulario de edición -->
+        <form action="{{ url_for('editar', id=producto.id) }}" method="POST">
+            <div class="mb-2">
+                <label>Equipo:</label>
+                <input type="text" name="equipo" class="form-control" value="{{ producto.equipo }}" required>
+            </div>
+            <div class="mb-2">
+                <label>Descripción:</label>
+                <input type="text" name="descripcion" class="form-control" value="{{ producto.descripcion }}">
+            </div>
+            <div class="mb-2">
+                <label>Serial:</label>
+                <input type="text" name="serial" class="form-control" value="{{ producto.serial }}">
+            </div>
+            <div class="mb-2">
+                <label>Ubicación:</label>
+                <input type="text" name="ubicacion" class="form-control" value="{{ producto.ubicacion }}">
+            </div>
+            <div class="mb-2">
+                <label>Responsable:</label>
+                <input type="text" name="responsable" class="form-control" value="{{ producto.responsable }}">
+            </div>
+            <div class="mb-2">
+                <label>Observaciones:</label>
+                <input type="text" name="observaciones" class="form-control" value="{{ producto.observaciones }}">
+            </div>
+            <div class="mb-2">
+                <label>Marca:</label>
+                <input type="text" name="marca" class="form-control" value="{{ producto.marca }}">
+            </div>
+            <div class="mb-2">
+                <label>Modelo:</label>
+                <input type="text" name="modelo" class="form-control" value="{{ producto.modelo }}">
+            </div>
+            <div class="mb-2">
+                <label>Estado:</label>
+                <input type="text" name="estado" class="form-control" value="{{ producto.estado }}">
+            </div>
+            <div class="mb-2">
+                <label>Cantidad:</label>
+                <input type="number" name="cantidad" class="form-control" value="{{ producto.cantidad }}">
+            </div>
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>
