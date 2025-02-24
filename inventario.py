@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash 
+import os
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -17,27 +18,20 @@ class Producto(db.Model):
     serial = db.Column(db.String(100), nullable=True)
     ubicacion = db.Column(db.String(100), nullable=True)
     responsable = db.Column(db.String(100), nullable=True)
-    observaciones = db.Column(db.String(255), nullable=False, default="")  # Evita NULL
+    observaciones = db.Column(db.String(255), nullable=True)
     marca = db.Column(db.String(50), nullable=True)
     modelo = db.Column(db.String(50), nullable=True)
     estado = db.Column(db.String(50), nullable=True)
     cantidad = db.Column(db.Integer, nullable=False, default=1)
 
-# Crear la base de datos (solo si no existe)
+# Crear la base de datos si no existe
 with app.app_context():
     db.create_all()
 
-# Página principal - Mostrar productos con ordenación
 @app.route('/')
 def index():
-    orden_actual = request.args.get('ordenar_por', 'item')  # Por defecto ordena por 'item'
-    
-    if orden_actual not in ['item', 'equipo', 'marca']:
-        orden_actual = 'item'  # Seguridad: evitar valores inesperados
-    
-    productos = Producto.query.order_by(getattr(Producto, orden_actual)).all()
-    
-    return render_template('inventario.html', productos=productos, orden_actual=orden_actual)
+    productos = Producto.query.order_by(Producto.item).all()
+    return render_template('inventario.html', productos=productos)
 
 # Agregar un nuevo producto
 @app.route('/agregar', methods=['POST'])
@@ -110,5 +104,7 @@ def eliminar(id):
 
     return redirect(url_for('index'))
 
+# Configuración para Render
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 10000))  # Render asignará el puerto automáticamente
+    app.run(debug=False, host='0.0.0.0', port=port)
