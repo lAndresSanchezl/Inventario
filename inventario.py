@@ -30,8 +30,14 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    productos = Producto.query.order_by(Producto.item).all()
-    return render_template('inventario.html', productos=productos)
+    ordenar_por = request.args.get('ordenar_por', 'item')  # Por defecto, ordenar por 'item'
+
+    # Validar el campo de ordenamiento para evitar inyección SQL
+    columnas_validas = {'item': Producto.item, 'equipo': Producto.equipo, 'marca': Producto.marca}
+    columna_orden = columnas_validas.get(ordenar_por, Producto.item)  # Si no es válido, usa 'item'
+
+    productos = Producto.query.order_by(columna_orden).all()
+    return render_template('inventario.html', productos=productos, orden_actual=ordenar_por)
 
 # Agregar un nuevo producto
 @app.route('/agregar', methods=['POST'])
