@@ -1,0 +1,129 @@
+/* ======= ESTILOS GENERALES ======= */
+body {
+    background-image: url("../static/imagenes/OIP.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* Fija la imagen de fondo */
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* ======= ENCABEZADO ======= */
+.header {
+    background: #004080; /* Azul oscuro */
+    padding: 15px;
+    text-align: center;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ======= CONTENEDOR PRINCIPAL ======= */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* ======= TÍTULO ======= */
+h1 {
+    text-align: center;
+    color: #004080;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+/* ======= TABLA DE INVENTARIO ======= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Encabezados de la tabla */
+th {
+    background: linear-gradient(to right, #0056b3, #1a80ed);
+    color: white;
+    padding: 14px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 3px solid #004080;
+}
+
+/* Celdas de la tabla */
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+/* Alternar colores en filas */
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Efecto hover en filas */
+tr:hover {
+    background-color: #d1e0ff;
+    transition: 0.3s;
+}
+
+/* ======= BOTONES ======= */
+button, .btn {
+    padding: 12px 18px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: 0.3s;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+button:hover, .btn:hover {
+    background-color: #0056b3;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+}
+
+/* Botón de agregar producto */
+.add-product-btn {
+    display: block;
+    width: fit-content;
+    margin: 20px auto;
+    padding: 14px 22px;
+    font-size: 16px;
+    background: #28a745;
+}
+
+.add-product-btn:hover {
+    background: #218838;
+}
+
+/* ======= RESPONSIVIDAD ======= */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 15px;
+    }
+    table {
+        font-size: 13px;
+    }
+    th, td {
+        padding: 10px;
+    }
+    .add-product-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
