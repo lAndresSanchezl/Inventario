@@ -52,7 +52,7 @@ table {
 /* Encabezados de la tabla */
 th {
     background: linear-gradient(to right, #0056b3, #1a80ed);
-    color: white;
+    color: rgba(255, 255, 255, 0.909) !important;
     padding: 14px;
     text-align: center;
     font-weight: bold;
