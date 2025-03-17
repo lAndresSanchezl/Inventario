@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Cambios</title>
+
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/logo_hablame_azul.png') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+  <style>
+    .icono-usuario {
+      font-size: 1.5rem;
+      color: #0d6efd;
+      margin-right: 0.5rem;
+    }
+    #loading-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgb(13, 109, 253);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .loader {
+      border: 5px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 5px solid #fff;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin {
+      0%   { transform:rotate(0deg);}
+      100% { transform:rotate(360deg);}
+    }
+  </style>
+</head>
+<body>
+
+{% if not current_user.is_authenticated %}
+  <script>window.location.href="{{ url_for('login') }}";</script>
+{% endif %}
+
+<div class="container mt-4">
+  <!-- Encabezado wave EXACTO al de inventario.html -->
+  <div class="page-background hero-header">
+    <div class="header-content d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center">
+        <!-- Icono de usuario -->
+        <i class="fas fa-user-circle icono-usuario"></i>
+        <h5 class="mb-0">Bienvenido, <strong>{{ current_user.nombre }}</strong></h5>
+      </div>
+      <!-- Enlaces: Volver a Inventario, Mi Perfil, Cerrar Sesión -->
+      <div class="d-flex align-items-center">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-2">
+          <i class="fas fa-home me-1"></i> Inventario
+        </a>
+        <a href="{{ url_for('perfil') }}" class="btn btn-outline-secondary me-2">
+          <i class="fas fa-user me-1"></i> Mi Perfil
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-logout btn-sm d-flex align-items-center"
+           style="background:#fff; color:#0d6efd; border:2px solid #0d6efd; border-radius:20px; font-weight:500;">
+          <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+        </a>
+      </div>
+    </div>
+    <p class="mt-3 mb-0" style="font-size:0.95rem; color:#333;">
+      Aquí puedes consultar todos los cambios realizados en el inventario, 
+      quién los hizo y cuándo ocurrieron.
+    </p>
+  </div>
+
+  <!-- Mensajes Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <h2 class="mb-4">Historial de Cambios</h2>
+
+  <!-- Tabla con .table-3d para filas 3D -->
+  <table class="table table-bordered table-striped table-hover table-3d">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>ID Producto</th>
+        <th>Campo</th>
+        <th>Valor Anterior</th>
+        <th>Valor Nuevo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log.fecha_cambio }}</td>
+        <td>{{ log.user.nombre if log.user else 'Desconocido' }}</td>
+        <td>{{ log.product_id }}</td>
+        <td>{{ log.campo }}</td>
+        <td>{{ log.valor_anterior }}</td>
+        <td>{{ log.valor_nuevo }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

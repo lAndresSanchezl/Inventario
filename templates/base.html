@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}</title>
+
+  <!-- Bootstrap y FontAwesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <!-- Tu CSS unificado -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="app-bg">
+
+  <!--
+  =====================================================
+    NAVBAR (ELIMINADO / COMENTADO para que no se muestre)
+  =====================================================
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+        <img src="{{ url_for('static', filename='imagenes/logo_hablame_azul.png') }}"
+             alt="Hablame.co" width="120" height="30" class="d-inline-block align-text-top me-2">
+        <span>Inventario</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="#">Bienvenido, {{ current_user.nombre }}</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="inventariosDropdown" role="button"
+                 data-bs-toggle="dropdown" aria-expanded="false">
+                Inventarios
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="inventariosDropdown">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('index') }}">
+                    Productos
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('celulares_index') }}">
+                    Celulares
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('perfil') }}">Mi Perfil</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('historial') }}">Historial</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('login') }}">Iniciar Sesión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('registro') }}">Registrarse</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+  -->
+
+  <!-- Contenido principal -->
+  <div class="container my-4">
+
+    <!-- Bloque Mensajes Flash con barra de tiempo -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} mt-2 position-relative" style="overflow: hidden;">
+        {{ message }}
+        <!-- Barra de tiempo que se reduce de 100% a 0% -->
+        <div class="progress-bar-flash"></div>
+      </div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <!-- Fin Bloque Mensajes Flash -->
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script para animar la barra y ocultar mensajes flash -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let mensajes = document.querySelectorAll('.alert');
+    mensajes.forEach(function(mensaje) {
+      // Buscar la barra dentro del mensaje
+      let barra = mensaje.querySelector('.progress-bar-flash');
+      if (barra) {
+        // Pequeño retardo para iniciar la transición (4s)
+        setTimeout(() => {
+          barra.style.width = '0%';
+        }, 50);
+      }
+      // A los 4s, se desvanece el mensaje
+      setTimeout(() => {
+        mensaje.style.transition = "opacity 0.5s ease";
+        mensaje.style.opacity = "0";
+        setTimeout(() => mensaje.remove(), 500);
+      }, 4000);
+    });
+  });
+  </script>
+</body>
+</html>

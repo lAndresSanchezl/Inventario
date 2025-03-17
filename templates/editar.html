@@ -1,61 +1,74 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Producto</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-4">
-        <h2>Editar Producto</h2>
+{% extends "base.html" %}
+{% block title %}Editar Celular{% endblock %}
 
-        <!-- Formulario de edición -->
-        <form action="{{ url_for('editar', id=producto.id) }}" method="POST">
-            <div class="mb-2">
-                <label>Equipo:</label>
-                <input type="text" name="equipo" class="form-control" value="{{ producto.equipo }}" required>
-            </div>
-            <div class="mb-2">
-                <label>Descripción:</label>
-                <input type="text" name="descripcion" class="form-control" value="{{ producto.descripcion }}">
-            </div>
-            <div class="mb-2">
-                <label>Serial:</label>
-                <input type="text" name="serial" class="form-control" value="{{ producto.serial }}">
-            </div>
-            <div class="mb-2">
-                <label>Ubicación:</label>
-                <input type="text" name="ubicacion" class="form-control" value="{{ producto.ubicacion }}">
-            </div>
-            <div class="mb-2">
-                <label>Responsable:</label>
-                <input type="text" name="responsable" class="form-control" value="{{ producto.responsable }}">
-            </div>
-            <div class="mb-2">
-                <label>Observaciones:</label>
-                <input type="text" name="observaciones" class="form-control" value="{{ producto.observaciones }}">
-            </div>
-            <div class="mb-2">
-                <label>Marca:</label>
-                <input type="text" name="marca" class="form-control" value="{{ producto.marca }}">
-            </div>
-            <div class="mb-2">
-                <label>Modelo:</label>
-                <input type="text" name="modelo" class="form-control" value="{{ producto.modelo }}">
-            </div>
-            <div class="mb-2">
-                <label>Estado:</label>
-                <input type="text" name="estado" class="form-control" value="{{ producto.estado }}">
-            </div>
-            <div class="mb-2">
-                <label>Cantidad:</label>
-                <input type="number" name="cantidad" class="form-control" value="{{ producto.cantidad }}">
-            </div>
-            <button type="submit" class="btn btn-success">Guardar Cambios</button>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
-        </form>
+{% block content %}
+<div class="container mt-4">
+  <h2>Editar Celular</h2>
+
+  <form action="{{ url_for('editar_celular', id=cel.id) }}" method="POST">
+    <div class="mb-2">
+      <label>Marca:</label>
+      <input type="text" name="marca" class="form-control" value="{{ cel.marca }}">
     </div>
-</body>
-</html>
+    <div class="mb-2">
+      <label>Referencia:</label>
+      <input type="text" name="referencia" class="form-control" value="{{ cel.referencia }}">
+    </div>
+    <div class="mb-2">
+      <label>Número 1:</label>
+      <input type="text" name="numero_asignado1" class="form-control" value="{{ cel.numero1 }}">
+    </div>
+    <div class="mb-2">
+      <label>Número 2 (Opcional):</label>
+      <input type="text" name="numero_asignado2" class="form-control" value="{{ cel.numero2 }}">
+    </div>
+
+    <div class="mb-2">
+      <label>Operador 1</label>
+      <select name="operador1" class="form-select">
+        <option value="">-- Seleccionar --</option>
+        <option value="Claro"     {% if cel.operador1 == "Claro" %}selected{% endif %}>Claro</option>
+        <option value="Movistar"  {% if cel.operador1 == "Movistar" %}selected{% endif %}>Movistar</option>
+        <option value="Tigo"      {% if cel.operador1 == "Tigo" %}selected{% endif %}>Tigo</option>
+        <option value="Wom"       {% if cel.operador1 == "Wom" %}selected{% endif %}>Wom</option>
+        <option value="Exito"     {% if cel.operador1 == "Exito" %}selected{% endif %}>Éxito</option>
+        <option value="Liwa"      {% if cel.operador1 == "Liwa" %}selected{% endif %}>Liwa</option>
+        <option value="Virgin"    {% if cel.operador1 == "Virgin" %}selected{% endif %}>Virgin</option>
+        <option value="Etb"       {% if cel.operador1 == "Etb" %}selected{% endif %}>Etb</option>
+      </select>
+    </div>
+    <div class="mb-2">
+      <label>Operador 2 (Opcional)</label>
+      <select name="operador2" class="form-select">
+        <option value="">-- Ninguno --</option>
+        <option value="Claro"     {% if cel.operador2 == "Claro" %}selected{% endif %}>Claro</option>
+        <option value="Movistar"  {% if cel.operador2 == "Movistar" %}selected{% endif %}>Movistar</option>
+        <option value="Tigo"      {% if cel.operador2 == "Tigo" %}selected{% endif %}>Tigo</option>
+        <option value="Wom"       {% if cel.operador2 == "Wom" %}selected{% endif %}>Wom</option>
+        <option value="Exito"     {% if cel.operador2 == "Exito" %}selected{% endif %}>Éxito</option>
+        <option value="Liwa"      {% if cel.operador2 == "Liwa" %}selected{% endif %}>Liwa</option>
+        <option value="Virgin"    {% if cel.operador2 == "Virgin" %}selected{% endif %}>Virgin</option>
+        <option value="Etb"       {% if cel.operador2 == "Etb" %}selected{% endif %}>Etb</option>
+      </select>
+    </div>
+
+    <div class="mb-2 form-check">
+      <input class="form-check-input" type="checkbox" name="cargador" id="cargador"
+             {% if cel.cargador %}checked{% endif %}>
+      <label class="form-check-label" for="cargador">Cargador</label>
+    </div>
+    <div class="mb-2 form-check">
+      <input class="form-check-input" type="checkbox" name="base" id="base"
+             {% if cel.base %}checked{% endif %}>
+      <label class="form-check-label" for="base">Base</label>
+    </div>
+    <div class="mb-2">
+      <label>Observaciones:</label>
+      <input type="text" name="observaciones" class="form-control" value="{{ cel.observaciones }}">
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+    <a href="{{ url_for('celulares_index') }}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

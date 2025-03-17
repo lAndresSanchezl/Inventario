@@ -1,129 +1,383 @@
+/* ======= PANTALLA DE CARGA MEJORADA ======= */
+#loading-screen {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+  }
+  
+  .hidden {
+    opacity: 0;
+    visibility: hidden;
+  }  
+  
+/* Animación que desplaza el degradado */
+@keyframes bgMove {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Ocultar pantalla de carga */
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Contenedor del mensaje */
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-size: 26px;
+    font-weight: bold;
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+
+    /* Animación de entrada */
+    animation: fadeInUp 1s ease forwards;
+}
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ======= SPINNER 3D CON PULSO ======= */
+.loader {
+    margin-top: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    border-top: 6px solid #ffffff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+
+    /* Combinamos giro y pulso */
+    animation: spin 1.2s cubic-bezier(0.6, 0.1, 0.3, 1) infinite,
+               pulse 1.5s ease-in-out infinite;
+}
+
+/* Giro del loader */
+@keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pulso (agranda y reduce levemente el loader) */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.1); }
+}
+
+
 /* ======= ESTILOS GENERALES ======= */
 body {
     background-image: url("../static/imagenes/OIP.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Fija la imagen de fondo */
+    background-attachment: fixed;
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* ======= ENCABEZADO ======= */
 .header {
-    background: #004080; /* Azul oscuro */
-    padding: 15px;
+    background: linear-gradient(to right, #004080, #0056b3);
+    padding: 20px;
     text-align: center;
     color: white;
-    font-size: 22px;
+    font-size: 28px;
     font-weight: bold;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 10px;
+    text-shadow: 3px 3px 6px rgba(12, 12, 12, 0.463);
 }
 
 /* ======= CONTENEDOR PRINCIPAL ======= */
 .container {
     width: 90%;
     max-width: 1200px;
-    margin: 40px auto;
+    margin: 50px auto;
     background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+/* ======= BÚSQUEDA EN TIEMPO REAL ======= */
+.search-container {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* ======= TÍTULO ======= */
 h1 {
     text-align: center;
     color: #004080;
-    font-size: 28px;
+    font-size: 32px;
     margin-bottom: 20px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
-/* ======= TABLA DE INVENTARIO ======= */
+/* ======= TABLA MEJORADA ======= */
 table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
+    font-size: 18px;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-/* Encabezados de la tabla */
+/* Efecto de elevación cuando el cursor está sobre la tabla */
+table:hover {
+    transform: scale(1.02);
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Estilo para los encabezados de la tabla */
 th {
     background: linear-gradient(to right, #0056b3, #1a80ed);
-    color: rgba(255, 255, 255, 0.909) !important;
-    padding: 14px;
+    color: #F0F0F0 !important; 
+    padding: 16px;
     text-align: center;
     font-weight: bold;
-    border-bottom: 3px solid #004080;
+    border-bottom: 4px solid #004080;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Celdas de la tabla */
 td {
-    padding: 12px;
+    padding: 14px;
     border-bottom: 1px solid #ddd;
     text-align: center;
 }
 
-/* Alternar colores en filas */
+/* Alternar colores en las filas */
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #f2f4f7;
 }
 
-/* Efecto hover en filas */
-tr:hover {
-    background-color: #d1e0ff;
-    transition: 0.3s;
+/* Animación de las filas al pasar el cursor */
+tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+    transform: scale(1.01);
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 
-/* ======= BOTONES ======= */
+/* ======= BOTONES MEJORADOS ======= */
 button, .btn {
-    padding: 12px 18px;
-    background-color: #007bff;
-    color: white;
+    padding: 12px 20px;
     border: none;
     cursor: pointer;
-    border-radius: 6px;
-    font-size: 15px;
-    transition: 0.3s;
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Botón Editar */
+.btn-warning {
+    background-color: #ffc107;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* Botón Eliminar */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* Hover en botones */
 button:hover, .btn:hover {
-    background-color: #0056b3;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.4);
     transform: scale(1.05);
 }
 
-/* Botón de agregar producto */
-.add-product-btn {
-    display: block;
-    width: fit-content;
-    margin: 20px auto;
-    padding: 14px 22px;
-    font-size: 16px;
-    background: #28a745;
+/* ======= EFECTO HOVER EN BOTONES ======= */
+.btn-warning:hover {
+    background-color: #e0a800;
 }
 
-.add-product-btn:hover {
-    background: #218838;
+.btn-danger:hover {
+    background-color: #c82333;
 }
 
 /* ======= RESPONSIVIDAD ======= */
 @media (max-width: 768px) {
     .container {
         width: 95%;
-        padding: 15px;
+        padding: 20px;
     }
     table {
-        font-size: 13px;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
     }
-    th, td {
-        padding: 10px;
-    }
-    .add-product-btn {
+    button, .btn {
         width: 100%;
-        text-align: center;
+        margin-bottom: 10px;
+    }
+    .search-container {
+        width: 90%;
     }
 }
+
+/* ========================================
+   NUEVAS CLASES PARA EFECTO WAVE Y 3D
+   ======================================== */
+
+/* 1) Fondo wave / hero */
+.page-background {
+    position: relative;
+    color: #fff;
+    padding: 3rem 1rem;
+    text-align: center;
+    background: linear-gradient(135deg, #0281ffb7 0%, #3c7cfc98 100%);
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    overflow: hidden; /* Para ocultar la ola al desplazarse */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* OLA BLANCA CON ANIMACIÓN DE VAIVÉN */
+.page-background::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 320' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ffffff' fill-opacity='1' d='M0,256L48,229.3C96,203,192,149,288,144C384,139,480,181,576,181.3C672,181,768,139,864,122.7C960,107,1056,117,1152,128C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") no-repeat;
+  background-size: cover;
+  opacity: 0.8;
+  animation: waveFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes waveFloat {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+/* 2) Tarjeta con efecto 3D */
+.card-3d {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: perspective(800px) translateZ(0) rotateX(0deg);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.card-3d:hover {
+  transform: perspective(800px) rotateX(4deg) translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.20);
+}
+
+/* 3) Tabla con efecto 3D en filas (opcional) */
+.table-3d tbody tr {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.table-3d tbody tr:hover {
+  transform: perspective(600px) rotateX(2deg) translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+/* ========================================
+   AGREGAR OVERLAY DE ACCIÓN
+   ======================================== */
+
+/* Overlay para acciones (Agregar, Editar, Eliminar) */
+#action-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 9998; /* debajo del #loading-screen (9999) */
+  display: none; /* oculto por defecto */
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 24px;
+  text-align: center;
+}
+
+#action-overlay .overlay-content {
+  background: rgba(0,0,0,0.3);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+#action-overlay .loader-small {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 1rem auto;
+}
+.progress-bar-flash {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;             /* Grosor de la barra */
+    width: 100%;             /* Empieza al 100% */
+    background-color: #ccc;  /* Color de la barra, ajústalo a tu gusto */
+    transition: width 4s linear;  /* De 100% a 0% en 4s */
+  }
+  
+  

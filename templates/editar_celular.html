@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Editar Celular{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Editar Celular</h2>
+
+  <form action="{{ url_for('editar_celular', id=cel.id) }}" method="POST"
+        onsubmit="showActionOverlay('Actualizando Celular...')">
+    <!-- Marca -->
+    <div class="mb-2">
+      <label>Marca:</label>
+      <input type="text" name="marca" class="form-control" value="{{ cel.marca }}">
+    </div>
+
+    <!-- Número Serial -->
+    <div class="mb-2">
+      <label>Número Serial:</label>
+      <input type="text" name="numero_serial" class="form-control" value="{{ cel.numero_serial }}">
+    </div>
+
+    <!-- Número 1 -->
+    <div class="mb-2">
+      <label>Número 1:</label>
+      <input type="tel"
+             name="numero1"
+             class="form-control"
+             pattern="^\+?[0-9]{7,15}$"
+             title="Ingresa de 7 a 15 dígitos, con o sin +"
+             oninput="detectarPais(this)"
+             value="{{ numero1_edit }}"
+      >
+    </div>
+    <!-- Número 2 (Opcional) -->
+    <div class="mb-2">
+      <label>Número 2 (Opcional):</label>
+      <input type="tel"
+             name="numero2"
+             class="form-control"
+             pattern="^\+?[0-9]{7,15}$"
+             title="Ingresa de 7 a 15 dígitos, con o sin +"
+             oninput="detectarPais(this)"
+             value="{{ numero2_edit }}"
+      >
+    </div>
+
+    <!-- Operador 1 -->
+    <div class="mb-2">
+      <label>Operador 1:</label>
+      <select name="operador1" class="form-select">
+        <option value="">-- Seleccionar --</option>
+        <option value="Claro"     {% if operador1_edit == "Claro" %}selected{% endif %}>Claro</option>
+        <option value="Movistar"  {% if operador1_edit == "Movistar" %}selected{% endif %}>Movistar</option>
+        <option value="Tigo"      {% if operador1_edit == "Tigo" %}selected{% endif %}>Tigo</option>
+        <option value="Wom"       {% if operador1_edit == "Wom" %}selected{% endif %}>Wom</option>
+        <option value="Exito"     {% if operador1_edit == "Exito" %}selected{% endif %}>Éxito</option>
+        <option value="Liwa"      {% if operador1_edit == "Liwa" %}selected{% endif %}>Liwa</option>
+        <option value="Virgin"    {% if operador1_edit == "Virgin" %}selected{% endif %}>Virgin</option>
+        <option value="Etb"       {% if operador1_edit == "Etb" %}selected{% endif %}>Etb</option>
+      </select>
+    </div>
+    <!-- Operador 2 (Opcional) -->
+    <div class="mb-2">
+      <label>Operador 2 (Opcional):</label>
+      <select name="operador2" class="form-select">
+        <option value="">-- Ninguno --</option>
+        <option value="Claro"     {% if operador2_edit == "Claro" %}selected{% endif %}>Claro</option>
+        <option value="Movistar"  {% if operador2_edit == "Movistar" %}selected{% endif %}>Movistar</option>
+        <option value="Tigo"      {% if operador2_edit == "Tigo" %}selected{% endif %}>Tigo</option>
+        <option value="Wom"       {% if operador2_edit == "Wom" %}selected{% endif %}>Wom</option>
+        <option value="Exito"     {% if operador2_edit == "Exito" %}selected{% endif %}>Éxito</option>
+        <option value="Liwa"      {% if operador2_edit == "Liwa" %}selected{% endif %}>Liwa</option>
+        <option value="Virgin"    {% if operador2_edit == "Virgin" %}selected{% endif %}>Virgin</option>
+        <option value="Etb"       {% if operador2_edit == "Etb" %}selected{% endif %}>Etb</option>
+      </select>
+    </div>
+
+    <!-- Cargador / Base -->
+    <div class="mb-2 form-check">
+      <input class="form-check-input" type="checkbox" name="cargador" id="cargador"
+             {% if cel.cargador %}checked{% endif %}>
+      <label class="form-check-label" for="cargador">Cargador</label>
+    </div>
+    <div class="mb-2 form-check">
+      <input class="form-check-input" type="checkbox" name="base" id="base"
+             {% if cel.base %}checked{% endif %}>
+      <label class="form-check-label" for="base">Base</label>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="mb-2">
+      <label>Observaciones:</label>
+      <input type="text" name="observaciones" class="form-control" value="{{ cel.observaciones }}">
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+    <a href="{{ url_for('celulares_index') }}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+
+<script>
+  // Mismo script de detectarPais
+  function detectarPais(input) {
+    let val = input.value.replace(/\s+/g, '').trim();
+    if (!val.startsWith('+') && val.length === 10 && val.startsWith('3')) {
+      input.value = '+57' + val;
+    }
+  }
+  function showActionOverlay(msg) {
+    document.getElementById("action-text").innerText = msg;
+    document.getElementById("action-overlay").style.display = "flex";
+  }
+</script>
+{% endblock %}
