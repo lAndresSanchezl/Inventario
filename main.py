@@ -33,10 +33,7 @@ from flask_mail import Mail
 # ---------------------------
 # Usar DATABASE_URL si existe (por ejemplo, una DB gestionada en Render);
 # en caso contrario caer en SQLite local en instance/database.db
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL',
-    'sqlite:///instance/database.db'
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///basededatos.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
@@ -164,25 +161,40 @@ def registrar_cambios(objeto, form, user_id, tabla='producto'):
     db.session.commit()
     return True
 
-# ---------------------------
-# Rutas de Registro y Login
-# ---------------------------
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
         nombre = request.form.get('nombre')
         correo = request.form.get('correo')
         contraseña = request.form.get('contraseña')
+
+        # Validar si ya existe el correo
         if Usuario.query.filter_by(correo=correo).first():
             flash('Este correo ya está registrado.', 'danger')
             return redirect(url_for('registro'))
+
+        # Verificar cuántos usuarios hay en total
+        total_usuarios = Usuario.query.count()
+
+        # Crear nuevo usuario con datos básicos
         nuevo_usuario = Usuario(nombre=nombre, correo=correo)
         nuevo_usuario.set_password(contraseña)
-        # quedará con aprobado=False por defecto
+
+        # Si es el primer usuario, darle rol de admin y marcar como aprobado
+        if total_usuarios == 0:
+            nuevo_usuario.rol = 'admin'
+            nuevo_usuario.aprobado = True
+            flash('Se creó el primer administrador correctamente.', 'success')
+        else:
+            nuevo_usuario.rol = 'usuario'  # o el valor por defecto
+            nuevo_usuario.aprobado = False
+            flash('Registro exitoso. Tu cuenta está pendiente de aprobación.', 'info')
+
         db.session.add(nuevo_usuario)
         db.session.commit()
-        flash('Registro exitoso. Tu cuenta está pendiente de aprobación.', 'info')
+
         return redirect(url_for('login'))
+
     return render_template('registro.html')
 
 @app.route('/login', methods=['GET', 'POST'])
