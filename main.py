@@ -23,15 +23,25 @@ app = Flask(__name__)
 app.secret_key = "supersecretkey"
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+import os
+# … tus otros imports …
+from flask_migrate import Migrate
+from flask_mail import Mail
+
 # ---------------------------
 # Configuración de la Base de Datos
 # ---------------------------
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:Hablame2025@localhost/inventario"
+# Usar DATABASE_URL si existe (por ejemplo, una DB gestionada en Render);
+# en caso contrario caer en SQLite local en instance/database.db
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    'sqlite:///instance/database.db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 # ---------------------------
-# Configuración de Flask-Mail (Ejemplo para Gmail)
+# Configuración de Flask-Mail
 # ---------------------------
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -52,6 +62,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
 
 @app.template_filter('local_time')
 def local_time_filter(value):
