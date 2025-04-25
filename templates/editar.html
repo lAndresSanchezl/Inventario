@@ -1,74 +1,183 @@
 {% extends "base.html" %}
-{% block title %}Editar Celular{% endblock %}
+{% block title %}Editar Producto{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Editar Celular</h2>
+{% if current_user.is_authenticated %}
+  <!-- ENCABEZADO DATACENTER -->
+  <header class="header-datacenter">
+    <nav>
+      <a href="javascript:history.back()" title="Volver"><i class="fa fa-arrow-left"></i> Volver</a>
+      <a href="{{ url_for('index') }}" onclick="showActionOverlay('Cargando Datacenter...')">Datacenter</a>
+      <a href="{{ url_for('celulares_index') }}" onclick="showActionOverlay('Cargando Tecnología...')">Tecnología</a>
+      <a href="{{ url_for('perfil') }}" onclick="showActionOverlay('Cargando Perfil...')">Mi Perfil</a>
+      <a href="{{ url_for('logout') }}" class="logout-link">Cerrar Sesión</a>
+    </nav>
+    <div class="welcome">
+      <h2>Bienvenido, <strong>{{ current_user.nombre }}</strong></h2>
+      <p>Estás editando la información de un producto del Datacenter</p>
+    </div>
+  </header>
+{% else %}
+  <script>window.location.href = "{{ url_for('login') }}";</script>
+{% endif %}
 
-  <form action="{{ url_for('editar_celular', id=cel.id) }}" method="POST">
-    <div class="mb-2">
-      <label>Marca:</label>
-      <input type="text" name="marca" class="form-control" value="{{ cel.marca }}">
-    </div>
-    <div class="mb-2">
-      <label>Referencia:</label>
-      <input type="text" name="referencia" class="form-control" value="{{ cel.referencia }}">
-    </div>
-    <div class="mb-2">
-      <label>Número 1:</label>
-      <input type="text" name="numero_asignado1" class="form-control" value="{{ cel.numero1 }}">
-    </div>
-    <div class="mb-2">
-      <label>Número 2 (Opcional):</label>
-      <input type="text" name="numero_asignado2" class="form-control" value="{{ cel.numero2 }}">
-    </div>
+<!-- FORMULARIO EDITAR -->
+<div class="container my-4">
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body">
+      <h3 class="mb-4 text-center">Editar Producto</h3>
+      <form action="{{ url_for('editar', id=producto.id) }}" method="POST" class="row g-4">
 
-    <div class="mb-2">
-      <label>Operador 1</label>
-      <select name="operador1" class="form-select">
-        <option value="">-- Seleccionar --</option>
-        <option value="Claro"     {% if cel.operador1 == "Claro" %}selected{% endif %}>Claro</option>
-        <option value="Movistar"  {% if cel.operador1 == "Movistar" %}selected{% endif %}>Movistar</option>
-        <option value="Tigo"      {% if cel.operador1 == "Tigo" %}selected{% endif %}>Tigo</option>
-        <option value="Wom"       {% if cel.operador1 == "Wom" %}selected{% endif %}>Wom</option>
-        <option value="Exito"     {% if cel.operador1 == "Exito" %}selected{% endif %}>Éxito</option>
-        <option value="Liwa"      {% if cel.operador1 == "Liwa" %}selected{% endif %}>Liwa</option>
-        <option value="Virgin"    {% if cel.operador1 == "Virgin" %}selected{% endif %}>Virgin</option>
-        <option value="Etb"       {% if cel.operador1 == "Etb" %}selected{% endif %}>Etb</option>
-      </select>
-    </div>
-    <div class="mb-2">
-      <label>Operador 2 (Opcional)</label>
-      <select name="operador2" class="form-select">
-        <option value="">-- Ninguno --</option>
-        <option value="Claro"     {% if cel.operador2 == "Claro" %}selected{% endif %}>Claro</option>
-        <option value="Movistar"  {% if cel.operador2 == "Movistar" %}selected{% endif %}>Movistar</option>
-        <option value="Tigo"      {% if cel.operador2 == "Tigo" %}selected{% endif %}>Tigo</option>
-        <option value="Wom"       {% if cel.operador2 == "Wom" %}selected{% endif %}>Wom</option>
-        <option value="Exito"     {% if cel.operador2 == "Exito" %}selected{% endif %}>Éxito</option>
-        <option value="Liwa"      {% if cel.operador2 == "Liwa" %}selected{% endif %}>Liwa</option>
-        <option value="Virgin"    {% if cel.operador2 == "Virgin" %}selected{% endif %}>Virgin</option>
-        <option value="Etb"       {% if cel.operador2 == "Etb" %}selected{% endif %}>Etb</option>
-      </select>
-    </div>
+        <div class="col-md-6">
+          <label for="equipo" class="form-label">Equipo *</label>
+          <input type="text" id="equipo" name="equipo" class="form-control" value="{{ producto.equipo }}" required autofocus>
+        </div>
 
-    <div class="mb-2 form-check">
-      <input class="form-check-input" type="checkbox" name="cargador" id="cargador"
-             {% if cel.cargador %}checked{% endif %}>
-      <label class="form-check-label" for="cargador">Cargador</label>
-    </div>
-    <div class="mb-2 form-check">
-      <input class="form-check-input" type="checkbox" name="base" id="base"
-             {% if cel.base %}checked{% endif %}>
-      <label class="form-check-label" for="base">Base</label>
-    </div>
-    <div class="mb-2">
-      <label>Observaciones:</label>
-      <input type="text" name="observaciones" class="form-control" value="{{ cel.observaciones }}">
-    </div>
+        <div class="col-md-6">
+          <label for="descripcion" class="form-label">Descripción </label>
+          <input type="text" id="descripcion" name="descripcion" class="form-control" value="{{ producto.descripcion }}">
+        </div>
 
-    <button type="submit" class="btn btn-success">Guardar Cambios</button>
-    <a href="{{ url_for('celulares_index') }}" class="btn btn-secondary">Cancelar</a>
-  </form>
+        <div class="col-md-6">
+          <label for="serial" class="form-label">Serial</label>
+          <input type="text" id="serial" name="serial" class="form-control" value="{{ producto.serial }}">
+        </div>
+
+        <div class="col-md-6">
+          <label for="ubicacion" class="form-label">Ubicación *</label>
+          <input type="text" id="ubicacion" name="ubicacion" class="form-control" value="{{ producto.ubicacion }}" required>
+        </div>
+
+        <div class="col-md-6">
+          <label for="responsable" class="form-label">Responsable</label>
+          <input type="text" id="responsable" name="responsable" class="form-control" value="{{ producto.responsable }}">
+        </div>
+
+        <div class="col-md-6">
+          <label for="observaciones" class="form-label">Observaciones</label>
+          <input type="text" id="observaciones" name="observaciones" class="form-control" value="{{ producto.observaciones }}">
+        </div>
+
+        <div class="col-md-4">
+          <label for="marca" class="form-label">Marca</label>
+          <input type="text" id="marca" name="marca" class="form-control" value="{{ producto.marca }}">
+        </div>
+
+        <div class="col-md-4">
+          <label for="modelo" class="form-label">Modelo</label>
+          <input type="text" id="modelo" name="modelo" class="form-control" value="{{ producto.modelo }}">
+        </div>
+
+        <div class="col-md-4">
+          <label for="estado" class="form-label">Estado</label>
+          <select id="estado" name="estado" class="form-select">
+            <option selected>{{ producto.estado }}</option>
+            <option>Nuevo</option>
+            <option>Usado</option>
+            <option>Dañado</option>
+            <option>En reparación</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="cantidad" class="form-label">Cantidad</label>
+          <input type="number" id="cantidad" name="cantidad" class="form-control" value="{{ producto.cantidad }}" min="1">
+        </div>
+
+        <div class="col-md-6">
+          <label for="valor" class="form-label">Valor</label>
+          <input type="number" id="valor" name="valor" class="form-control" value="{{ producto.valor }}" min="0" step="any">
+        </div>
+
+        <div class="text-end mt-3">
+          <button type="submit" class="btn btn-success px-4 me-2">Guardar Cambios</button>
+          <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+<!-- ESTILOS -->
+<style>
+  .header-datacenter {
+    background: linear-gradient(270deg, rgba(52,152,219,0.85), rgba(46,204,113,0.85));
+    background-size: 400% 400%;
+    animation: animDatacenter 8s ease infinite;
+    backdrop-filter: blur(6px);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    margin-bottom: 40px;
+  }
+
+  @keyframes animDatacenter {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .header-datacenter nav {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .header-datacenter nav a {
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .header-datacenter nav a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .logout-link {
+    background-color: #fff;
+    color: #2c3e50 !important;
+  }
+
+  .header-datacenter .welcome {
+    text-align: center;
+  }
+
+  .header-datacenter .welcome h2 {
+    margin: 0;
+    font-size: 1.75rem;
+  }
+
+  .header-datacenter .welcome p {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .form-label {
+    font-weight: 600;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px;
+  }
+</style>
+
+<!-- JS Overlay opcional -->
+<script>
+  function showActionOverlay(msg) {
+    const overlay = document.getElementById("action-overlay");
+    const text = document.getElementById("action-text");
+    if (overlay && text) {
+      text.innerText = msg;
+      overlay.style.display = "flex";
+    }
+  }
+</script>
 {% endblock %}

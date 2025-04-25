@@ -1,0 +1,710 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario de Tecnología</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='imagenes/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <style>
+    header.new-header {
+      background: linear-gradient(270deg, rgba(142,68,173,0.8), rgba(231,76,60,0.8), rgba(142,68,173,0.8), rgba(231,76,60,0.8));
+      background-size: 400% 400%;
+      animation: gradientHeaderTech 8s ease infinite;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    @keyframes gradientHeaderTech {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    header.new-header nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    header.new-header nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 10px 18px;
+      border-radius: 8px;
+      transition: transform 0.3s ease, background 0.3s ease;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    header.new-header nav a:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-3px);
+    }
+
+    .user-profile-box {
+      background-color: rgba(255,255,255,0.1);
+      padding: 10px 15px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .user-info-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .user-info-box .info-text {
+      text-align: right;
+    }
+
+    .user-info-box .info-text .name {
+      font-weight: 600;
+    }
+
+    .user-info-box .status-online {
+      color: #00ff88;
+      font-weight: 500;
+    }
+
+    .user-info-box .status-offline {
+      color: #bbbbbb;
+      font-weight: 500;
+    }
+
+    .user-info-box .avatar {
+      width: 45px;
+      height: 45px;
+      background-color: #fff;
+      color: #333;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 110%;
+      right: 0;
+      background-color: #fff;
+      color: #333;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      padding: 10px 0;
+      z-index: 100;
+      display: none;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 8px 20px;
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #f1f1f1;
+    }
+
+    .avatar-dropdown.show .dropdown-menu {
+      display: block;
+    }
+
+    .welcome {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .welcome h2 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .welcome p {
+      font-size: 1.2rem;
+      color: #dcdcdc;
+    }
+  </style>
+</head>
+<body>
+<div class="container mt-4">
+  {% if current_user.is_authenticated %}
+  <header class="new-header d-flex flex-column">
+    <!-- Navegación -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <nav>
+        <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Volver</a>
+        <a href="{{ url_for('index') }}"><i class="fas fa-database"></i> Datacenter</a>
+        <a href="{{ url_for('celulares_index', tab='celulares') }}"><i class="fas fa-mobile-alt"></i> Tecnología</a>
+        <a href="{{ url_for('historial') }}"><i class="fas fa-history"></i> Historial</a>
+        <a href="{{ url_for('perfil') }}"><i class="fas fa-id-card"></i> Mi Perfil</a>
+        <a href="{{ url_for('usuarios') }}" class="btn btn-light text-dark btn-sm ms-2">
+          <i class="fas fa-users"></i> Usuarios
+        </a>
+      </nav>
+
+      <!-- Caja perfil usuario -->
+      <div class="user-profile-box avatar-dropdown mt-3 mt-md-0" id="avatarDropdown">
+        <div class="user-info-box">
+          <div class="info-text">
+            <div class="name">{{ current_user.nombre }}</div>
+            {% if current_user.ultimo_acceso and (datetime.utcnow() - current_user.ultimo_acceso).total_seconds() < 300 %}
+              <div class="status-online small"><i class="fas fa-circle"></i> En línea</div>
+            {% else %}
+              <div class="status-offline small"><i class="far fa-circle"></i> Desconectado</div>
+            {% endif %}
+          </div>
+          <div class="avatar" onclick="toggleDropdown()">
+            <i class="{{ current_user.avatar_clase or 'fas fa-user' }}"></i>
+          </div>
+          <div class="dropdown-menu">
+            <a href="{{ url_for('perfil') }}"><i class="fas fa-user"></i> Mi Perfil</a>
+            <a href="{{ url_for('index') }}"><i class="fas fa-database"></i> Ir al Datacenter</a>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bienvenida -->
+    <div class="welcome text-center mt-4">
+      <h2>Bienvenido, <strong>{{ current_user.nombre }}</strong></h2>
+      <p>Gestiona tus activos de tecnología de forma profesional</p>
+    </div>
+  </header>
+  {% else %}
+    <script>window.location.href = "{{ url_for('login') }}";</script>
+  {% endif %}
+  <!-- Bloque de mensajes flash (colócalo justo debajo del header de la sección de inventario) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  <div id="flash-container" class="mt-3">
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} flash-message">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endwith %}
+
+<script>
+  function toggleDropdown() {
+    const dropdown = document.getElementById('avatarDropdown');
+    dropdown.classList.toggle('show');
+    document.addEventListener('click', function closeDropdown(e) {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('show');
+        document.removeEventListener('click', closeDropdown);
+      }
+    });
+  }
+</script>
+
+
+
+    <h2 class="mb-4">Inventario de Tecnología</h2>
+
+    {% set active_tab = request.args.get('tab', 'celulares') %}
+    <!-- Pestañas -->
+    <ul class="nav nav-tabs" id="techInventoryTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link {% if active_tab == 'celulares' %}active{% endif %}" id="celulares-tab" data-bs-toggle="tab" data-bs-target="#celulares" type="button" role="tab" aria-controls="celulares" aria-selected="{{ 'true' if active_tab == 'celulares' else 'false' }}">Celulares</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link {% if active_tab == 'computers' %}active{% endif %}" id="computers-tab" data-bs-toggle="tab" data-bs-target="#computers" type="button" role="tab" aria-controls="computers" aria-selected="{{ 'true' if active_tab == 'computers' else 'false' }}">Computadores</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link {% if active_tab == 'simcards' %}active{% endif %}" id="simcards-tab" data-bs-toggle="tab" data-bs-target="#simcards" type="button" role="tab" aria-controls="simcards" aria-selected="{{ 'true' if active_tab == 'simcards' else 'false' }}">Tarjetas SIM</button>
+      </li>
+    </ul>
+    
+    <div class="tab-content mt-3" id="techInventoryTabsContent">
+      <!-- Celulares -->
+      <div class="tab-pane fade {% if active_tab == 'celulares' %}show active{% endif %}" id="celulares" role="tabpanel" aria-labelledby="celulares-tab">
+        <div class="d-flex justify-content-end mb-3">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarCelular">Agregar Celular</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover w-100">
+            <thead class="table-dark">
+              <tr>
+                <th>Item</th>
+                <th>Marca</th>
+                <th>Serial</th>
+                <th>Números</th>
+                <th>Operadores</th>
+                <th>Cargador</th>
+                <th>Base</th>
+                <th>Observaciones</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for celular in celulares %}
+              <tr>
+                <td>{{ celular.item }}</td>
+                <td>{{ celular.marca }}</td>
+                <td>{{ celular.numero_serial }}</td>
+                <td>{{ celular.numeros }}</td>
+                <td>{{ celular.operadores }}</td>
+                <td>{{ "Sí" if celular.cargador else "No" }}</td>
+                <td>{{ "Sí" if celular.base else "No" }}</td>
+                <td>{{ celular.observaciones }}</td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('editar_celular', id=celular.id) }}?tab=celulares" class="btn btn-warning">Editar</a>
+                    <form action="{{ url_for('eliminar_celular', id=celular.id) }}?tab=celulares" method="POST" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar este celular?');">
+                      <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalFecha" data-nombre="{{ celular.marca }} - {{ celular.numero_serial }}" data-fecha="{{ celular.fecha_modificacion.strftime('%Y-%m-%d %H:%M:%S') if celular.fecha_modificacion else '' }}">
+                      <i class="fas fa-clock"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- Exportar Celulares -->
+        <div class="dropdown my-3">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="exportCelulares" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-file-export me-1"></i> Exportar Celulares
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="exportCelulares">
+            <li>
+              <a class="dropdown-item" href="{{ url_for('exportar_excel', tipo='celulares') }}">
+                <i class="fas fa-file-excel me-1" style="color:green;"></i> Excel
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('exportar_pdf', tipo='celulares') }}">
+                <i class="fas fa-file-pdf me-1" style="color:red;"></i> PDF
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Computadores -->
+      <div class="tab-pane fade {% if active_tab == 'computers' %}show active{% endif %}" id="computers" role="tabpanel" aria-labelledby="computers-tab">
+        <div class="d-flex justify-content-end mb-3">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarComputer">Agregar Computador</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover w-100">
+            <thead class="table-dark">
+              <tr>
+                <th>Item</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Usuario Asignado</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for comp in computers %}
+              <tr>
+                <td>{{ comp.item }}</td>
+                <td>{{ comp.marca }}</td>
+                <td>{{ comp.modelo }}</td>
+                <td>{{ comp.usuario_asignado }}</td>
+                <td>{{ comp.estado }}</td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('editar_computer', id=comp.id) }}?tab=computers" class="btn btn-warning">Editar</a>
+                    <form action="{{ url_for('eliminar_computer', id=comp.id) }}?tab=computers" method="POST" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar este computador?');">
+                      <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalFecha" data-nombre="{{ comp.modelo }}" data-fecha="{{ comp.fecha_modificacion.strftime('%Y-%m-%d %H:%M:%S') if comp.fecha_modificacion else '' }}">
+                      <i class="fas fa-clock"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- Exportar Computadores -->
+        <div class="dropdown my-3">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="exportComputadores" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-file-export me-1"></i> Exportar Computadores
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="exportComputadores">
+            <li>
+              <a class="dropdown-item" href="{{ url_for('exportar_excel', tipo='computadores') }}">
+                <i class="fas fa-file-excel me-1" style="color:green;"></i> Excel
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('exportar_pdf', tipo='computadores') }}">
+                <i class="fas fa-file-pdf me-1" style="color:red;"></i> PDF
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tarjetas SIM -->
+      <div class="tab-pane fade {% if active_tab == 'simcards' %}show active{% endif %}" id="simcards" role="tabpanel" aria-labelledby="simcards-tab">
+        <div class="d-flex justify-content-end mb-3">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarSimcard">Agregar Tarjeta SIM</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover w-100">
+            <thead class="table-dark">
+              <tr>
+                <th>Número</th>
+                <th>Operador</th>
+                <th>Observaciones</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sim in simcards %}
+              <tr>
+                <td>{{ sim.numero }}</td>
+                <td>{{ sim.operador }}</td>
+                <td>{{ sim.observaciones }}</td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('editar_simcard', id=sim.id) }}?tab=simcards" class="btn btn-warning">Editar</a>
+                    <form action="{{ url_for('eliminar_simcard', id=sim.id) }}?tab=simcards" method="POST" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar esta tarjeta SIM?');">
+                      <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalFecha" data-nombre="{{ sim.numero }}" data-fecha="{{ sim.fecha_modificacion.strftime('%Y-%m-%d %H:%M:%S') if sim.fecha_modificacion else '' }}">
+                      <i class="fas fa-clock"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- Exportar Tarjetas SIM -->
+        <div class="dropdown my-3">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="exportSimcards" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-file-export me-1"></i> Exportar Tarjetas SIM
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="exportSimcards">
+            <li>
+              <a class="dropdown-item" href="{{ url_for('exportar_excel', tipo='simcards') }}">
+                <i class="fas fa-file-excel me-1" style="color:green;"></i> Excel
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('exportar_pdf', tipo='simcards') }}">
+                <i class="fas fa-file-pdf me-1" style="color:red;"></i> PDF
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal para Mostrar Última Modificación -->
+    <div class="modal fade" id="modalFecha" tabindex="-1" aria-labelledby="modalFechaLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalFechaLabel">Última Modificación</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Producto:</strong> <span id="modalNombre"></span></p>
+            <p><strong>Última modificación:</strong> <span id="modalFechaTexto"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Agregar Celular -->
+    <div class="modal fade" id="modalAgregarCelular" tabindex="-1" aria-labelledby="modalAgregarCelularLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalAgregarCelularLabel">Agregar Celular</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('agregar_celular') }}?tab=celulares" onsubmit="showActionOverlay('Agregando...')">
+              <div class="mb-3">
+                <label class="form-label">Tipo de Celular:</label>
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="tipo_sim" id="conSim" value="con" checked>
+                    <label class="form-check-label" for="conSim">Con SIM</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="tipo_sim" id="sinSim" value="sin">
+                    <label class="form-check-label" for="sinSim">Sin SIM</label>
+                  </div>
+                </div>
+              </div>
+              <div id="alwaysFields">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Marca*:</label>
+                      <input type="text" name="marca" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Número Serial*:</label>
+                      <input type="text" name="numero_serial" class="form-control" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3 form-check">
+                      <input class="form-check-input" type="checkbox" name="cargador" id="cargador">
+                      <label class="form-check-label" for="cargador">Cargador</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                      <input class="form-check-input" type="checkbox" name="base" id="base">
+                      <label class="form-check-label" for="base">Base</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="simFields">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Número 1:</label>
+                      <input type="tel" name="numero1" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Operador 1:</label>
+                      <select name="operador1" class="form-select">
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Claro">Claro</option>
+                        <option value="Movistar">Movistar</option>
+                        <option value="Tigo">Tigo</option>
+                        <option value="Wom">Wom</option>
+                        <option value="Exito">Éxito</option>
+                        <option value="Liwa">Liwa</option>
+                        <option value="Virgin">Virgin</option>
+                        <option value="Etb">Etb</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Número 2 (Opcional):</label>
+                      <input type="tel" name="numero2" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Operador 2 (Opcional):</label>
+                      <select name="operador2" class="form-select">
+                        <option value="">-- Ninguno --</option>
+                        <option value="Claro">Claro</option>
+                        <option value="Movistar">Movistar</option>
+                        <option value="Tigo">Tigo</option>
+                        <option value="Wom">Wom</option>
+                        <option value="Exito">Éxito</option>
+                        <option value="Liwa">Liwa</option>
+                        <option value="Virgin">Virgin</option>
+                        <option value="Etb">Etb</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-end">
+                <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Agregar Computador -->
+    <div class="modal fade" id="modalAgregarComputer" tabindex="-1" aria-labelledby="modalAgregarComputerLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalAgregarComputerLabel">Agregar Computador</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('agregar_computer') }}?tab=computers" onsubmit="showActionOverlay('Agregando...')">
+              <div class="mb-3">
+                <label class="form-label">Marca*:</label>
+                <input type="text" name="marca" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Modelo:</label>
+                <input type="text" name="modelo" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Ubicación/Usuario Asignado*:</label>
+                <input type="text" name="usuario_asignado" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Estado*:</label>
+                <input type="text" name="estado" class="form-control" required>
+              </div>
+              <div class="text-end">
+                <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Agregar Tarjeta SIM -->
+    <div class="modal fade" id="modalAgregarSimcard" tabindex="-1" aria-labelledby="modalAgregarSimcardLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalAgregarSimcardLabel">Agregar Tarjeta SIM</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('agregar_simcard') }}?tab=simcards" onsubmit="showActionOverlay('Agregando...')">
+              <div class="mb-3">
+                <label class="form-label">Número*:</label>
+                <input type="text" name="numero" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Operador*:</label>
+                <select name="operador" class="form-select" required>
+                  <option value="">-- Seleccionar --</option>
+                  <option value="Claro">Claro</option>
+                  <option value="Movistar">Movistar</option>
+                  <option value="Tigo">Tigo</option>
+                  <option value="Wom">Wom</option>
+                  <option value="Exito">Éxito</option>
+                  <option value="Liwa">Liwa</option>
+                  <option value="Virgin">Virgin</option>
+                  <option value="Etb">Etb</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Observaciones:</label>
+                <input type="text" name="observaciones" class="form-control">
+              </div>
+              <div class="text-end">
+                <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  </div> <!-- container -->
+  
+  <script>
+    window.addEventListener("load", function () {
+      const loadingScreen = document.getElementById("loading-screen");
+      if (loadingScreen) { loadingScreen.classList.add("hidden"); }
+    });
+    function showActionOverlay(msg) {
+      document.getElementById("action-text").innerText = msg;
+      document.getElementById("action-overlay").style.display = "flex";
+    }
+    function mostrarFecha(element) {
+      let nombre = element.getAttribute("data-nombre");
+      let fecha = element.getAttribute("data-fecha");
+      document.getElementById("modalNombre").innerText = nombre;
+      document.getElementById("modalFechaTexto").innerText = fecha;
+      new bootstrap.Modal(document.getElementById('modalFecha')).show();
+    }
+    const searchInput = document.getElementById("search-input");
+    if(searchInput) {
+      searchInput.addEventListener("keyup", function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll("table tbody tr");
+        rows.forEach(row => {
+          let text = row.textContent.toLowerCase();
+          row.style.display = text.includes(filter) ? "" : "none";
+        });
+      });
+    }
+    window.addEventListener('load', function() {
+      let mensajes = document.querySelectorAll('.alert');
+      mensajes.forEach(function(mensaje) {
+        setTimeout(() => {
+          mensaje.style.transition = "opacity 0.5s ease";
+          mensaje.style.opacity = "0";
+          setTimeout(() => mensaje.remove(), 500);
+        }, 4000);
+      });
+    });
+    
+    // Reordenar los ítems en las tablas de Celulares y Computadores
+    document.addEventListener("DOMContentLoaded", function() {
+      function reorderTableItems(selector) {
+        const rows = document.querySelectorAll(selector + " tbody tr");
+        let count = 1;
+        rows.forEach(function(row) {
+          const firstCell = row.querySelector("td:first-child");
+          if (firstCell) {
+            firstCell.textContent = count++;
+          }
+        });
+      }
+      reorderTableItems("#celulares table");
+      reorderTableItems("#computers table");
+    });
+    
+    // Mostrar/Ocultar campos SIM según opción seleccionada
+    document.addEventListener("DOMContentLoaded", function() {
+      const conSimRadio = document.getElementById("conSim");
+      const sinSimRadio = document.getElementById("sinSim");
+      const simFields = document.getElementById("simFields");
+      function toggleSimFields() {
+        if (sinSimRadio.checked) {
+          simFields.style.display = "none";
+        } else {
+          simFields.style.display = "block";
+        }
+      }
+      if(conSimRadio && sinSimRadio && simFields) {
+        conSimRadio.addEventListener("change", toggleSimFields);
+        sinSimRadio.addEventListener("change", toggleSimFields);
+        toggleSimFields();
+      }
+    });
+  </script>
+  <script>
+    const modalFecha = document.getElementById('modalFecha');
+    modalFecha.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const nombre = button.getAttribute('data-nombre');
+      const fecha = button.getAttribute('data-fecha');
+  
+      modalFecha.querySelector('.modal-title').textContent = 'Fecha de modificación';
+      modalFecha.querySelector('.modal-body').innerHTML = `
+        <p><strong>Producto:</strong> ${nombre}</p>
+        <p><strong>Última modificación:</strong> ${fecha}</p>
+      `;
+    });
+  </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

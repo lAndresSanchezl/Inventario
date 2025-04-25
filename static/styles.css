@@ -10,12 +10,12 @@
     font-size: 24px;
     opacity: 1;
     transition: opacity 1s ease-in-out;
-  }
+}
   
-  .hidden {
+.hidden {
     opacity: 0;
     visibility: hidden;
-  }  
+}  
   
 /* Animación que desplaza el degradado */
 @keyframes bgMove {
@@ -42,7 +42,6 @@
     font-size: 26px;
     font-weight: bold;
     text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
-
     /* Animación de entrada */
     animation: fadeInUp 1s ease forwards;
 }
@@ -66,7 +65,6 @@
     border: 6px solid rgba(255, 255, 255, 0.3);
     border-top: 6px solid #ffffff;
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-
     /* Combinamos giro y pulso */
     animation: spin 1.2s cubic-bezier(0.6, 0.1, 0.3, 1) infinite,
                pulse 1.5s ease-in-out infinite;
@@ -83,7 +81,6 @@
     0%, 100% { transform: scale(1); }
     50%      { transform: scale(1.1); }
 }
-
 
 /* ======= ESTILOS GENERALES ======= */
 body {
@@ -105,6 +102,12 @@ body {
 
 /* ======= ENCABEZADO ======= */
 .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    text-align: center;
     background: linear-gradient(to right, #004080, #0056b3);
     padding: 20px;
     text-align: center;
@@ -122,7 +125,7 @@ body {
 .container {
     width: 90%;
     max-width: 1200px;
-    margin: 50px auto;
+    margin: 120px auto; /* Se aumentó el margen superior para separar el contenido del encabezado fijo */
     background: white;
     padding: 30px;
     border-radius: 15px;
@@ -378,6 +381,11 @@ button:hover, .btn:hover {
     width: 100%;             /* Empieza al 100% */
     background-color: #ccc;  /* Color de la barra, ajústalo a tu gusto */
     transition: width 4s linear;  /* De 100% a 0% en 4s */
-  }
-  
-  
+}
+/* Ajuste para que el encabezado se fije en la parte superior y centrado */
+.page-background.hero-header {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    margin: 0 auto;
+}

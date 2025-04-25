@@ -3,162 +3,376 @@
 <head>
   <meta charset="UTF-8">
   <title>Mi Perfil</title>
-
-  <!-- Ícono en pestaña -->
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/logo_hablame_azul.png') }}">
-
-  <!-- Bootstrap y FontAwesome -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-  <!-- Tu CSS (donde está .page-background, .hero-header, .card-3d, etc.) -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
+  <link rel="icon" href="{{ url_for('static', filename='imagenes/favicon.ico') }}">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Free -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <style>
-    /* Ícono de usuario en el encabezado wave */
-    .icono-usuario {
-      font-size: 1.5rem;
-      color: #0d6efd;
-      margin-right: 0.5rem;
+    :root {
+      --primary-color: {{ session.get('color_primario', current_user.primary_color or '#3498db') }};
+      --secondary-color: {{ session.get('color_secundario', current_user.secondary_color or '#2ecc71') }};
     }
-
-    /* Avatar circular con emoji de usuario */
-    .avatar-container {
-      width: 130px;
-      height: 130px;
-      border-radius: 50%;
-      border: 3px solid #0d6efd;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      margin: 0 auto 1rem auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f9f9f9;
-      font-size: 60px;
-      color: #0d6efd;
+    body { background: #f0f2f5; color: #333; }
+    /* 3D Header */
+    #profile-header {
+      background: linear-gradient(270deg, var(--primary-color), var(--secondary-color));
+      background-size: 400% 400%;
+      animation: gradientMove 8s ease infinite;
+      padding: 3rem 1rem; border-radius: .75rem;
+      color: #fff; position: relative; margin-bottom: 2rem;
+      text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transform: perspective(600px) rotateX(4deg);
     }
+    @keyframes gradientMove {
+      0%,100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .btn-back { position:absolute; top:1rem; left:1rem; background:rgba(255,255,255,0.3); border:none; color:#fff; transition:transform .2s; }
+    .btn-back:hover { transform: translateY(-2px); }
+    .avatar-circle {
+      width:8rem; height:8rem; border-radius:50%; background:#fff;
+      margin:0 auto 1rem; display:flex; align-items:center; justify-content:center;
+      font-size:3rem; color:#555; box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    }
+    .avatar-option {
+      cursor:pointer; padding:1rem; border-radius:.5rem;
+      transition:background .2s, transform .2s, box-shadow .2s;
+    }
+    .avatar-option:hover {
+      background: var(--primary-color); color:#fff;
+      transform: translateY(-4px); box-shadow:0 4px 12px rgba(0,0,0,0.2);
+    }
+    .avatar-option.selected {
+      border:2px solid var(--secondary-color); box-shadow:0 0 .75rem rgba(0,0,0,.3);
+    }
+    .card { border:none; border-radius:.75rem; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    .accordion-button { border-radius:.5rem; }
+    .modal-content { border-radius:.75rem; }
+    .flash-message { opacity:1; transition:opacity .5s ease-out; }
   </style>
 </head>
 <body>
-
-<!-- Verificar login -->
-{% if not current_user.is_authenticated %}
-  <script>window.location.href="{{ url_for('login') }}";</script>
-{% endif %}
-
-<div class="container mt-4">
-  <!-- ENCABEZADO WAVE (igual que inventario, sin "Mi Perfil") -->
-  <div class="page-background hero-header">
-    <div class="header-content d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <div class="d-flex align-items-center">
-        <!-- Ícono de usuario -->
-        <i class="fas fa-user-circle icono-usuario"></i>
-        <h5 class="mb-0">Bienvenido, <strong>{{ current_user.nombre }}</strong></h5>
-      </div>
-      <!-- Enlaces: Inventario (fa-home), Historial (fa-clock), Cerrar Sesión (fa-sign-out-alt) -->
-      <div class="d-flex align-items-center">
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-2">
-          <i class="fas fa-home me-1"></i> Inventario
-        </a>
-        <a href="{{ url_for('historial') }}" class="btn btn-outline-secondary me-2">
-          <i class="fas fa-clock me-1"></i> Historial
-        </a>
-        <a href="{{ url_for('logout') }}" class="btn btn-logout btn-sm d-flex align-items-center"
-           style="background:#fff; color:#0d6efd; border:2px solid #0d6efd; border-radius:20px; font-weight:500;">
-          <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
-        </a>
-      </div>
-    </div>
-    <p class="mt-3 mb-0" style="font-size:0.95rem; color:#333;">
-      Administra tu cuenta y mantén tus datos actualizados.
-    </p>
-  </div>
-
-  <!-- MENSAJES FLASH -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-    {% endfor %}
+  {% if not current_user.is_authenticated %}
+    <script>window.location.href="{{ url_for('login') }}";</script>
   {% endif %}
-  {% endwith %}
 
-  <h2 class="mb-4">Mi Perfil</h2>
+  <div class="container py-4">
+    <!-- HEADER -->
+    <header id="profile-header">
+      <a href="{{ url_for('index') }}" class="btn btn-back"><i class="fas fa-arrow-left"></i></a>
+      <h1 class="display-5">Mi Perfil</h1>
+      <p class="lead">Bienvenido, <strong>{{ current_user.nombre }}{% if current_user.is_admin %} (Admin){% endif %}</strong></p>
+      <nav>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm me-2" title="Inventario"><i class="fas fa-home"></i></a>
+        <a href="{{ url_for('historial') }}" class="btn btn-outline-light btn-sm me-2" title="Historial"><i class="fas fa-clock"></i></a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm" title="Cerrar Sesión"><i class="fas fa-sign-out-alt"></i></a>
+      </nav>
+    </header>
 
-  <!-- DOS COLUMNAS: Avatar/Estadísticas a la izquierda, Form a la derecha -->
-  <div class="row">
-    <!-- Col Izquierda -->
-    <div class="col-md-4">
-      <!-- Tarjeta 3D con el avatar (emoji) -->
-      <div class="card-3d p-4 mb-4">
-        <div class="avatar-container">
-          <!-- Emoji de usuario en el círculo -->
-          👤
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="position-fixed top-0 end-0 p-3" style="z-index:1050;">
+          {% for cat,msg in messages %}
+            <div class="alert alert-{{ cat }} flash-message">{{ msg }}</div>
+          {% endfor %}
         </div>
-        <div class="text-center">
-          <button class="btn btn-outline-secondary btn-sm">Cambiar Avatar</button>
+      {% endif %}
+    {% endwith %}
+
+    {% set avatares = avatar_options or [
+      'fas fa-user','fas fa-user-circle','fas fa-male','fas fa-female',
+      'fas fa-user-tie','fas fa-user-graduate','fas fa-user-ninja','fas fa-user-secret',
+      'fas fa-user-astronaut','fas fa-user-md','fas fa-user-nurse','fas fa-user-injured',
+      'fas fa-user-hard-hat','fas fa-user-headset','fas fa-user-check','fas fa-user-clock',
+      'fas fa-user-shield','fas fa-user-cog','fas fa-user-plus','fas fa-user-tag'
+    ] %}
+
+    <div class="row gx-4 gy-4">
+      <!-- IZQUIERDA -->
+      <div class="col-lg-4">
+        <div class="card p-4 text-center mb-4">
+          <div class="avatar-circle" id="mainAvatar">
+            <i class="{{ current_user.avatar_clase or 'fas fa-user' }}"></i>
+          </div>
+          <h5 class="mb-3">Actividad Reciente</h5>
+          <ul class="list-group list-group-flush">
+            {% for act in actividades %}
+              <li class="list-group-item">{{ act }}</li>
+            {% else %}
+              <li class="list-group-item text-muted">No hay actividad registrada.</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="card p-3 mb-4">
+          <h5 class="mb-3">Estadísticas</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Registrado:</strong> {{ current_user.fecha_registro.strftime('%Y-%m-%d') }}</li>
+            <li class="list-group-item"><strong>Último acceso:</strong> {{ current_user.ultimo_acceso.strftime('%Y-%m-%d %H:%M:%S') }}</li>
+            <li class="list-group-item"><strong>Total cambios:</strong> {{ total_cambios }}</li>
+          </ul>
+        </div>
+        <div class="card text-danger p-3">
+          <h5>Eliminar Cuenta</h5>
+          <p class="small">Esta acción es irreversible.</p>
+          <button class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar Cuenta</button>
         </div>
       </div>
 
-      <!-- Tarjeta 3D con Estadísticas -->
-      <div class="card-3d p-4">
-        <h5 class="mb-3 text-center">Estadísticas</h5>
-        <ul class="list-group">
-          <!-- Ajusta o elimina si no tienes estos campos -->
-          <li class="list-group-item">
-            <strong>Fecha de Registro:</strong> {{ user.fecha_registro if user.fecha_registro else "N/D" }}
-          </li>
-          <li class="list-group-item">
-            <strong>Último Acceso:</strong> {{ user.ultimo_acceso if user.ultimo_acceso else "N/D" }}
-          </li>
-          <li class="list-group-item">
-            <strong>Cambios Realizados:</strong> {{ total_cambios if total_cambios else 0 }}
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Col Derecha: Formulario Perfil -->
-    <div class="col-md-8">
-      <div class="card-3d p-4">
-        <form method="POST">
-          <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre</label>
-            <input type="text" name="nombre" id="nombre" class="form-control" value="{{ user.nombre }}">
+      <!-- DERECHA -->
+      <div class="col-lg-8">
+        <div class="accordion" id="perfilAccordion">
+          <!-- DATOS PERSONALES -->
+          <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="hdrDatos">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#colDatos">Datos Personales</button>
+            </h2>
+            <div id="colDatos" class="accordion-collapse collapse show" data-bs-parent="#perfilAccordion">
+              <div class="accordion-body">
+                <form method="POST" action="{{ url_for('perfil') }}" novalidate>
+                  <input type="hidden" name="form_type" value="datos">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" class="form-control" value="{{ current_user.nombre }}" required>
+                  </div>
+                  <hr>
+                  <h6>Cambiar contraseña <small class="text-muted">(opcional)</small></h6>
+                  <div class="row g-2">
+                    <div class="col-md-4"><input type="password" name="old_password" class="form-control" placeholder="Actual"></div>
+                    <div class="col-md-4"><input type="password" name="new_password" class="form-control" placeholder="Nueva"></div>
+                    <div class="col-md-4"><input type="password" name="confirm_password" class="form-control" placeholder="Confirmar"></div>
+                  </div>
+                  <div class="text-end mt-3"><button class="btn btn-primary">Guardar Datos</button></div>
+                </form>
+              </div>
+            </div>
           </div>
 
-          <!-- Correo solo lectura (si lo deseas) -->
-          <div class="mb-3">
-            <label for="correo" class="form-label">Correo</label>
-            <input type="email" id="correo" class="form-control" value="{{ user.correo }}" readonly>
+          <!-- COLORES & NOTIFICACIONES -->
+          <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="hdrColores">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#colColores">Colores & Notificaciones</button>
+            </h2>
+            <div id="colColores" class="accordion-collapse collapse" data-bs-parent="#perfilAccordion">
+              <div class="accordion-body">
+                <form method="POST" action="{{ url_for('perfil') }}">
+                  <input type="hidden" name="form_type" value="personalizacion_colores">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Primario</label>
+                      <input type="color" name="primary_color" class="form-control form-control-color" value="{{ current_user.primary_color or '#3498db' }}">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Secundario</label>
+                      <input type="color" name="secondary_color" class="form-control form-control-color" value="{{ current_user.secondary_color or '#2ecc71' }}">
+                    </div>
+                  </div>
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="toggleNotifications" id="toggleNotif" {% if current_user.toggleNotifications %}checked{% endif %}>
+                    <label class="form-check-label" for="toggleNotif">Activar Notificaciones</label>
+                  </div>
+                  <div class="text-end">
+                    <button type="button" class="btn btn-secondary me-2" id="resetColors">Restablecer</button>
+                    <button class="btn btn-success">Guardar Preferencias</button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
 
-          <!-- Contraseña actual -->
-          <div class="mb-3">
-            <label for="old_password" class="form-label">Contraseña Actual</label>
-            <input type="password" name="old_password" id="old_password" class="form-control" placeholder="Ingresa tu contraseña actual">
+          <!-- AVATAR -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="hdrAvatar">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#colAvatar">Avatar</button>
+            </h2>
+            <div id="colAvatar" class="accordion-collapse collapse" data-bs-parent="#perfilAccordion">
+              <div class="accordion-body text-center">
+                <form method="POST" action="{{ url_for('perfil') }}">
+                  <input type="hidden" name="form_type" value="personalizacion_avatar">
+                  <input type="hidden" name="avatar_clase" id="avatarValue" value="{{ current_user.avatar_clase or 'fas fa-user' }}">
+                  <div class="avatar-circle mb-3" id="avatarPreview">
+                    <i class="{{ current_user.avatar_clase or 'fas fa-user' }}"></i>
+                  </div>
+                  <button type="button" class="btn btn-info btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#avatarModal">Seleccionar Avatar</button>
+                  {% if current_user.is_admin %}
+                    <button type="button" class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#manageAvatarsModal">Gestionar Avatares</button>
+                  {% endif %}
+                  <div><button type="submit" id="saveAvatarBtn" class="btn btn-primary" disabled>Guardar Avatar</button></div>
+                </form>
+              </div>
+            </div>
           </div>
 
-          <!-- Nueva Contraseña -->
-          <div class="mb-3">
-            <label for="new_password" class="form-label">Nueva Contraseña</label>
-            <input type="password" name="new_password" id="new_password" class="form-control" placeholder="Tu nueva contraseña">
-          </div>
-
-          <!-- Confirmar Nueva Contraseña -->
-          <div class="mb-3">
-            <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
-            <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Repite la nueva contraseña">
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100">Guardar Cambios</button>
-        </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Modal Seleccionar Avatar -->
+  <div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Seleccionar Avatar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if current_user.is_admin %}
+        <p>Para más iconos: <a href="https://fontawesome.com/icons" target="_blank">FontAwesome Icons</a></p>
+        {% endif %}
+        <div class="row row-cols-4 g-3 justify-content-center">
+          {% for a in avatares %}
+            <div class="col text-center">
+              <div class="avatar-option" data-avatar="{{ a }}">
+                <i class="{{ a }} fs-2"></i>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer"><button id="avatarConfirmBtn" class="btn btn-success" disabled>Confirmar</button></div>
+    </div></div>
+  </div>
+
+  <!-- Modal Gestionar Avatares (solo Admin) -->
+  {% if current_user.is_admin %}
+  <div class="modal fade" id="manageAvatarsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Gestionar Avatares</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('perfil') }}">
+        <input type="hidden" name="form_type" value="manage_avatars">
+        <input type="hidden" name="avatar_list" id="avatarList">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Agregar nueva clase de icono</label>
+            <div class="input-group">
+              <input id="newAvatarInput" type="text" class="form-control" placeholder="p.ej. fas fa-user-robot">
+              <button id="addAvatarBtn" class="btn btn-outline-primary" disabled>Añadir</button>
+            </div>
+            <small class="form-text text-muted">Copia la clase desde <a href="https://fontawesome.com/icons" target="_blank">FontAwesome Icons</a>.</small>
+          </div>
+          <h6>Avatares disponibles</h6>
+          <div class="row row-cols-5 g-2" id="manageAvatarGrid">
+            {% for a in avatares %}
+              <div class="col text-center" data-avatar="{{ a }}">
+                <i class="{{ a }} fs-2"></i>
+                <button class="btn-close mt-1 remove-avatar-btn" aria-label="Eliminar"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Guardar Cambios</button>
+        </div>
+      </form>
+    </div></div>
+  </div>
+  {% endif %}
+
+  <!-- Modal Eliminar Cuenta -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+      <form method="POST" action="{{ url_for('eliminar_cuenta') }}">
+        <div class="modal-header"><h5 class="modal-title">Eliminar Cuenta</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>¿Estás seguro? Esta acción es irreversible.</p>
+          <input type="password" name="password_confirm" class="form-control" placeholder="Contraseña" required></div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger">Eliminar</button></div>
+      </form>
+    </div></div>
+  </div>
+
+  <!-- Scripts comunes -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Tooltips
+      document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+      // Fade flash
+      setTimeout(() => document.querySelectorAll('.flash-message').forEach(el => el.style.opacity='0'), 4000);
+      // Color preview/reset
+      const pri = document.querySelector('input[name="primary_color"]');
+      const sec = document.querySelector('input[name="secondary_color"]');
+      function updateHeader(p,s){ document.getElementById('profile-header').style.background = `linear-gradient(270deg, ${p}, ${s})`; }
+      if(pri && sec){
+        pri.addEventListener('input', ()=>updateHeader(pri.value,sec.value));
+        sec.addEventListener('input', ()=>updateHeader(pri.value,sec.value));
+        document.getElementById('resetColors').addEventListener('click', ()=>{
+          const dp='#3498db', ds='#2ecc71';
+          pri.value=dp; sec.value=ds; updateHeader(dp,ds);
+        });
+      }
+      // Avatar selector
+      const opts = document.querySelectorAll('.avatar-option'),
+            btnConf = document.getElementById('avatarConfirmBtn'),
+            btnSave = document.getElementById('saveAvatarBtn'),
+            valField = document.getElementById('avatarValue'),
+            preview = document.getElementById('avatarPreview'),
+            mainAv = document.getElementById('mainAvatar');
+      let choice = '';
+      opts.forEach(el => el.addEventListener('click', ()=>{
+        opts.forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        choice = el.dataset.avatar;
+        btnConf.disabled = false;
+      }));
+      btnConf.addEventListener('click', ()=>{
+        if(!choice) return;
+        valField.value = choice;
+        preview.innerHTML = `<i class="${choice} fs-2"></i>`;
+        mainAv.innerHTML = `<i class="${choice}"></i>`;
+        btnSave.disabled = false;
+        bootstrap.Modal.getInstance(document.getElementById('avatarModal')).hide();
+      });
+    });
+  </script>
+
+  <!-- Scripts de administración -->
+  {% if current_user.is_admin %}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const newInput   = document.getElementById('newAvatarInput'),
+            addBtn     = document.getElementById('addAvatarBtn'),
+            grid       = document.getElementById('manageAvatarGrid'),
+            avatarList = document.getElementById('avatarList');
+
+      let adminAv = Array.from(grid.querySelectorAll('[data-avatar]')).map(el=>el.dataset.avatar);
+
+      newInput.addEventListener('input', ()=> addBtn.disabled = !newInput.value.trim() );
+      addBtn.addEventListener('click', ()=>{
+        const cls = newInput.value.trim();
+        if(cls && !adminAv.includes(cls)){
+          adminAv.push(cls);
+          const col = document.createElement('div');
+          col.className = 'col text-center';
+          col.dataset.avatar = cls;
+          col.innerHTML = `
+            <i class="${cls} fs-2"></i>
+            <button class="btn-close mt-1 remove-avatar-btn"></button>`;
+          grid.append(col);
+        }
+        newInput.value = '';
+        addBtn.disabled = true;
+        avatarList.value = JSON.stringify(adminAv);
+      });
+
+      grid.addEventListener('click', e => {
+        if(e.target.classList.contains('remove-avatar-btn')){
+          const col = e.target.closest('[data-avatar]');
+          adminAv = adminAv.filter(a=>a!==col.dataset.avatar);
+          col.remove();
+          avatarList.value = JSON.stringify(adminAv);
+        }
+      });
+
+      // Inicializar lista
+      avatarList.value = JSON.stringify(adminAv);
+    });
+  </script>
+  {% endif %}
+
 </body>
 </html>

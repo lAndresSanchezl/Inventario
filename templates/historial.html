@@ -3,115 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <title>Historial de Cambios</title>
-
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='imagenes/logo_hablame_azul.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='imagenes/favicon.ico') }}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
   <style>
-    .icono-usuario {
-      font-size: 1.5rem;
-      color: #0d6efd;
-      margin-right: 0.5rem;
+    body { background-color: #f6f9fc; font-family: 'Segoe UI', sans-serif; }
+    .header-historial {
+      background: linear-gradient(270deg, #f39c12, #e67e22);
+      background-size: 400% 400%;
+      animation: gradientHeaderHist 8s ease infinite;
+      padding: 25px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      color: #fff; text-align: center; margin-bottom: 30px;
     }
-    #loading-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgb(13, 109, 253);
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    @keyframes gradientHeaderHist {
+      0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
     }
-    .loader {
-      border: 5px solid #f3f3f3;
-      border-radius: 50%;
-      border-top: 5px solid #fff;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 1rem auto;
-    }
-    @keyframes spin {
-      0%   { transform:rotate(0deg);}
-      100% { transform:rotate(360deg);}
-    }
+    .btn-animate:hover { transform: scale(1.05); transition: 0.3s ease; }
+    .table-container { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .badge-tabla { font-size: 0.8rem; font-weight: 600; }
+    .badge-producto { background-color: #007bff; }
+    .badge-celulares { background-color: #20c997; }
+    .badge-simcards { background-color: #fd7e14; }
+    .badge-computers { background-color: #6f42c1; }
+    .icono-cambio { font-size: 1.2rem; margin-right: 6px; }
+    .agregado { color: green; }
+    .eliminado { color: red; }
+    .modificado { color: orange; }
+    .flash-message { transition: opacity 0.5s ease; }
   </style>
 </head>
 <body>
+  {% if not current_user.is_authenticated %}
+    <script>window.location.href = "{{ url_for('login') }}";</script>
+  {% endif %}
 
-{% if not current_user.is_authenticated %}
-  <script>window.location.href="{{ url_for('login') }}";</script>
-{% endif %}
+  <div class="container mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Regresar</a>
 
-<div class="container mt-4">
-  <!-- Encabezado wave EXACTO al de inventario.html -->
-  <div class="page-background hero-header">
-    <div class="header-content d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <div class="d-flex align-items-center">
-        <!-- Icono de usuario -->
-        <i class="fas fa-user-circle icono-usuario"></i>
-        <h5 class="mb-0">Bienvenido, <strong>{{ current_user.nombre }}</strong></h5>
+    <header class="header-historial">
+      <h2>Historial de Cambios</h2>
+      <p class="mb-0">Registros de acciones sobre Productos, Celulares, SIM Cards y Computadoras</p>
+      {% if current_user.rol == 'admin' %}
+      <button type="button" class="btn btn-danger btn-sm mt-3 btn-animate" data-bs-toggle="modal" data-bs-target="#modalLimpiar">
+        <i class="fas fa-trash"></i> Eliminar Todo el Historial
+      </button>
+      {% endif %}
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-container" class="mb-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show flash-message" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Filtros: Tabla + Fecha -->
+    <form method="GET" class="row g-3 mb-4">
+      <div class="col-md-4">
+        <label for="tabla" class="form-label">Tabla:</label>
+        <select name="tabla" id="tabla" class="form-select">
+          <option value="" {% if not request.args.get('tabla') %}selected{% endif %}>Todas</option>
+          <option value="producto" {% if request.args.get('tabla')=='producto' %}selected{% endif %}>Productos</option>
+          <option value="celulares" {% if request.args.get('tabla')=='celulares' %}selected{% endif %}>Celulares</option>
+          <option value="simcards" {% if request.args.get('tabla')=='simcards' %}selected{% endif %}>SIM Cards</option>
+          <option value="computers" {% if request.args.get('tabla')=='computers' %}selected{% endif %}>Computadoras</option>
+        </select>
       </div>
-      <!-- Enlaces: Volver a Inventario, Mi Perfil, Cerrar Sesión -->
-      <div class="d-flex align-items-center">
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-2">
-          <i class="fas fa-home me-1"></i> Inventario
-        </a>
-        <a href="{{ url_for('perfil') }}" class="btn btn-outline-secondary me-2">
-          <i class="fas fa-user me-1"></i> Mi Perfil
-        </a>
-        <a href="{{ url_for('logout') }}" class="btn btn-logout btn-sm d-flex align-items-center"
-           style="background:#fff; color:#0d6efd; border:2px solid #0d6efd; border-radius:20px; font-weight:500;">
-          <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
-        </a>
+      <div class="col-md-4">
+        <label for="fecha_desde" class="form-label">Desde:</label>
+        <input type="date" class="form-control" name="fecha_desde" id="fecha_desde" value="{{ request.args.get('fecha_desde','') }}">
+      </div>
+      <div class="col-md-4">
+        <label for="fecha_hasta" class="form-label">Hasta:</label>
+        <input type="date" class="form-control" name="fecha_hasta" id="fecha_hasta" value="{{ request.args.get('fecha_hasta','') }}">
+      </div>
+      <div class="col-12 text-end">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrar</button>
+      </div>
+    </form>
+
+    <div class="table-container">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover text-center">
+          <thead class="table-dark">
+            <tr>
+              <th><i class="fas fa-calendar-alt"></i> Fecha</th>
+              <th><i class="fas fa-user"></i> Usuario</th>
+              <th><i class="fas fa-table"></i> Tabla</th>
+              <th><i class="fas fa-box"></i> Ítem</th>
+              <th><i class="fas fa-exchange-alt"></i> Cambio</th>
+              <th><i class="fas fa-pen"></i> Campo</th>
+              <th><i class="fas fa-arrow-left"></i> Anterior</th>
+              <th><i class="fas fa-arrow-right"></i> Nuevo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.fecha_cambio.strftime('%d-%m-%Y %H:%M') }}</td>
+              <td>{{ log.user.nombre if log.user else 'Desconocido' }}</td>
+              <td>
+                <span class="badge badge-tabla {% if log.tabla_afectada=='producto' %}badge-producto{% elif log.tabla_afectada=='celulares' %}badge-celulares{% elif log.tabla_afectada=='simcards' %}badge-simcards{% elif log.tabla_afectada=='computers' %}badge-computers{% endif %}">
+                  {{ log.tabla_afectada.capitalize() }}
+                </span>
+              </td>
+              <td>{{ log.item_registro or 'N/A' }}</td>
+              <td>
+                {% if log.tipo=='agregado' %}<i class="fas fa-plus-circle icono-cambio agregado"></i> Agregado
+                {% elif log.tipo=='eliminacion' %}<i class="fas fa-trash icono-cambio eliminado"></i> Eliminado
+                {% else %}<i class="fas fa-pen icono-cambio modificado"></i> Modificado{% endif %}
+              </td>
+              <td>{{ log.campo or '—' }}</td>
+              <td>{{ log.valor_anterior or '—' }}</td>
+              <td>{{ log.valor_nuevo or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if not logs %}<div class="alert alert-info text-center mt-4">No hay cambios registrados aún.</div>{% endif %}
       </div>
     </div>
-    <p class="mt-3 mb-0" style="font-size:0.95rem; color:#333;">
-      Aquí puedes consultar todos los cambios realizados en el inventario, 
-      quién los hizo y cuándo ocurrieron.
-    </p>
+
+    <div class="modal fade" id="modalLimpiar" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Eliminar Historial</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            Esta acción eliminará <strong>todo el historial de cambios</strong> de forma irreversible.<br><br>¿Continuar?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <form method="POST" action="{{ url_for('limpiar_historial') }}">
+              <button type="submit" class="btn btn-danger">Eliminar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Mensajes Flash -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-  {% endwith %}
-
-  <h2 class="mb-4">Historial de Cambios</h2>
-
-  <!-- Tabla con .table-3d para filas 3D -->
-  <table class="table table-bordered table-striped table-hover table-3d">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Usuario</th>
-        <th>ID Producto</th>
-        <th>Campo</th>
-        <th>Valor Anterior</th>
-        <th>Valor Nuevo</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for log in logs %}
-      <tr>
-        <td>{{ log.fecha_cambio }}</td>
-        <td>{{ log.user.nombre if log.user else 'Desconocido' }}</td>
-        <td>{{ log.product_id }}</td>
-        <td>{{ log.campo }}</td>
-        <td>{{ log.valor_anterior }}</td>
-        <td>{{ log.valor_nuevo }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      document.querySelectorAll('.flash-message').forEach(msg => {
+        setTimeout(() => { msg.style.opacity=0; setTimeout(()=>msg.remove(),500); },4000);
+      });
+    });
+  </script>
 </body>
 </html>

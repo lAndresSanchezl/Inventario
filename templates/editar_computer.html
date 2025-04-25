@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Computador</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='imagenes/favicon.ico') }}">
+  <!-- Bootstrap y FontAwesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Tu CSS principal -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+  <style>
+    /* Encabezado gradiente púrpura–rojo (igual que en inventario_tecnologia) */
+    header.new-header {
+      background: linear-gradient(270deg, rgba(142,68,173,0.8), rgba(231,76,60,0.8), rgba(142,68,173,0.8), rgba(231,76,60,0.8));
+      background-size: 400% 400%;
+      animation: gradientHeaderTech 8s ease infinite;
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    @keyframes gradientHeaderTech {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    header.new-header nav {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    header.new-header nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 14px;
+      border-radius: 5px;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    header.new-header nav a:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-3px);
+    }
+    header.new-header .welcome {
+      text-align: center;
+    }
+    header.new-header .welcome h2 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    header.new-header .welcome p {
+      margin: 0;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <!-- Pantalla de carga -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <h2 id="welcome-text">¡Bienvenido!</h2>
+      <p id="loading-subtext">Preparando tu experiencia...</p>
+      <div class="loader"></div>
+    </div>
+  </div>
+  
+  <!-- Overlay para acciones -->
+  <div id="action-overlay">
+    <div class="overlay-content">
+      <div id="action-text">Procesando...</div>
+      <div class="loader-small"></div>
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    {% if current_user.is_authenticated %}
+      <!-- Encabezado gradiente -->
+      <header class="new-header">
+        <nav>
+          <a href="javascript:history.back()"><i class="fa fa-arrow-left"></i> Volver</a>
+          <a href="{{ url_for('index') }}" onclick="showActionOverlay('Cargando Datacenter...')">Datacenter</a>
+          <a href="{{ url_for('celulares_index', tab='celulares') }}" onclick="showActionOverlay('Cargando Tecnología...')">Tecnología</a>
+          <a href="{{ url_for('perfil') }}" onclick="showActionOverlay('Cargando Perfil...')">Mi Perfil</a>
+          <a href="{{ url_for('logout') }}" style="background:#fff; color:#333;">Cerrar Sesión</a>
+        </nav>
+        <div class="welcome">
+          <h2>Bienvenido, <strong>{{ current_user.nombre }}</strong></h2>
+          <p>Gestiona tus activos de tecnología de forma profesional</p>
+        </div>
+      </header>
+    {% else %}
+      <script>window.location.href = "{{ url_for('login') }}";</script>
+    {% endif %}
+    
+    <h2 class="mb-4">Editar Computador</h2>
+
+    <!-- Al hacer POST, agregamos '?tab=computers' para volver a esa pestaña -->
+    <form method="POST" action="{{ url_for('editar_computer', id=computer.id) }}?tab=computers" onsubmit="showActionOverlay('Guardando...')">
+      <div class="mb-3">
+        <label class="form-label">Marca:</label>
+        <input type="text" name="marca" class="form-control" value="{{ computer.marca or '' }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Modelo:</label>
+        <input type="text" name="modelo" class="form-control" value="{{ computer.modelo }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Usuario Asignado:</label>
+        <input type="text" name="usuario_asignado" class="form-control" value="{{ computer.usuario_asignado }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Estado:</label>
+        <input type="text" name="estado" class="form-control" value="{{ computer.estado }}">
+      </div>
+      <button type="submit" class="btn btn-success px-4 me-2">Guardar Cambios</button>
+      <button type="button" class="btn btn-outline-secondary px-4" onclick="history.back()">Cancelar</button>
+    </form>
+  </div>
+
+  <script>
+    window.addEventListener("load", function () {
+      const loadingScreen = document.getElementById("loading-screen");
+      if (loadingScreen) {
+        loadingScreen.classList.add("hidden");
+      }
+    });
+    function showActionOverlay(msg) {
+      document.getElementById("action-text").innerText = msg;
+      document.getElementById("action-overlay").style.display = "flex";
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
